@@ -45,105 +45,239 @@ cancer.keys()       # 数据集关键字
 |symmetry (worst):                   |  0.156|  0.664|
 |fractal dimension (worst):          |  0.055|  0.208|
 
+### 2. 特征数量
+
+乳腺癌数据集有多少个特征? 下面的函数返回一个整数值
+```
+def answer_zero():
+    return len(cancer['feature_names'])
+
+answer_zero() #调用
+```
+
+### 3. 数据集转换成 DataFrame
+
+Scikit-learn 通常和 lists, numpy arrays, scipy-sparse matrices 以及 pandas DataFrames 一起使用，下面就用 pandas 将数据集转换成 DataFrame，这样对数据各种操作更方便. 
+
+下面的函数返回一个 `(569, 31)` 的 DataFrame ，并且 columns 和 index 分别为
+
+    
+```
+def answer_one():
+    
+    df = pd.DataFrame( data = cancer['data'], index=range(0,569), columns=  ['mean radius', 'mean texture', 'mean perimeter', 'mean area',
+'mean smoothness', 'mean compactness', 'mean concavity',
+'mean concave points', 'mean symmetry', 'mean fractal dimension',
+'radius error', 'texture error', 'perimeter error', 'area error',
+'smoothness error', 'compactness error', 'concavity error',
+'concave points error', 'symmetry error', 'fractal dimension error',
+'worst radius', 'worst texture', 'worst perimeter', 'worst area',
+'worst smoothness', 'worst compactness', 'worst concavity',
+'worst concave points', 'worst symmetry', 'worst fractal dimension'])
+    df['target'] = cancer['target']
+
+    
+    return df
+
+answer_one()
+```
+
+### 4. 类别分布
+数据集样本的类别的分布是怎样呢? ，例如有多少样本是 `malignant`(恶性) (编码为 0)，有多少样本是`benign`(良性) (编码为 1)?
+
+下面的函数返回 恶性 和 良性 两个类别各样本数 index = `['malignant', 'benign']`
+```
+def answer_two():
+    cancerdf = answer_one()
+    
+    yes = np.sum([cancerdf['target'] > 0])
+    no = np.sum([cancerdf['target'] < 1])
+    
+    data = np.array([no, yes])
+    s = pd.Series(data,index=['malignant','benign'])
+    
+    return s
+
+answer_two()
+```
 
 
+### 5. 数据准备1
+将上面的 DataFrame 分为 `X` (data，特征) and `y` (label，标签).
+
+*下面函数返回:* `(X, y)`*, * 
+* `X` *has shape* `(569, 30)` 30个特征
+* `y` *has shape* `(569,)`.
+
+
+```
+from sklearn.model_selection import train_test_split
+def answer_three():
+    cancerdf = answer_one()
+    
+    X = cancerdf[  ['mean radius', 'mean texture', 'mean perimeter', 'mean area',
+'mean smoothness', 'mean compactness', 'mean concavity',
+'mean concave points', 'mean symmetry', 'mean fractal dimension',
+'radius error', 'texture error', 'perimeter error', 'area error',
+'smoothness error', 'compactness error', 'concavity error',
+'concave points error', 'symmetry error', 'fractal dimension error',
+'worst radius', 'worst texture', 'worst perimeter', 'worst area',
+'worst smoothness', 'worst compactness', 'worst concavity',
+'worst concave points', 'worst symmetry', 'worst fractal dimension'] ]
+    y = cancerdf['target']
+    X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=0)
+    return X, y
+```
+
+### 6. 数据准备2
+利用 `train_test_split`, 将 `X`，`y` 分别分到训练集和测试集 `(X_train, X_test, y_train, and y_test)`.
+
+**设置随机数为 0，`random_state=0` **
+
+*下面函数返回；* `(X_train, X_test, y_train, y_test)`
+* `X_train` *has shape* `(426, 30)`
+* `X_test` *has shape* `(143, 30)`
+* `y_train` *has shape* `(426,)`
+* `y_test` *has shape* `(143,)`
+
+```
+from sklearn.model_selection import train_test_split
+
+def answer_four():
+    X, y = answer_three()
+    
+    X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=0)
+    print(X_train.shape, X_test.shape, y_train.shape, y_test.shape)
+    
+    return X_train, X_test, y_train, y_test
+```
+
+### 7. sklearn 中的 KNN 分类器
+利用 KNeighborsClassifier, 以及训练集 `X_train`, `y_train` 来训练模型，并设置 `n_neighbors = 1`.
+```
+from sklearn.neighbors import KNeighborsClassifier
+
+def answer_five():
+    X_train, X_test, y_train, y_test = answer_four()
+    
+    knn = KNeighborsClassifier(n_neighbors = 1)
+    knn.fit(X_train, y_train)
+    
+    return knn
+```
+
+### 8. 模型预测
+利用 KNN 分类模型，以及每个的特征的均值来预测样本.
+
+`cancerdf.mean()[:-1].values.reshape(1, -1)` 可以获得每个特征的均值, 忽略 target, 并 reshapes 数据从 1D 到 2D.
+
+*下面的函数返回一个数组 `array([ 0.])` or `array([ 1.])`*
+
+```
+from sklearn.neighbors import KNeighborsClassifier
+def answer_six():
+    cancerdf = answer_one()
+    means = cancerdf.mean()[:-1].values.reshape(1, -1)
+    A = answer_five()
+    prediction = A.predict(means)
+
+    return prediction
+
+answer_six()
+```
+
+### 9. 测试集预测
+利用上面的 KNN 模型预测数据 `X_test`的类别 y.
+
+*下面函数返回一个大小为 `(143,)` 的数组，并且值是 `0.0` or `1.0`.*
+
+```
+def answer_seven():
+    cancerdf = answer_one()
+    X_train, X_test, y_train, y_test = answer_four()
+    knn = answer_five()
+    prediction =  knn.predict(X_test)
+    
+    return prediction
+
+answer_seven()
+```
+
+### 10. 模型分数
+现在利用 `X_test` 和 `y_test`来看看模型能得多少分（平均准确度），原本的测试集就有label标签，而利用 KNN 同样可以对测试集预测得到另一组标签，从而计算出模型的平均准确度.
+
+*下面函数返回一个小数，0-1*
+
+```
+def answer_eight():
+    X_train, X_test, y_train, y_test = answer_four()
+    knn = answer_five()
+    score = (knn.score(X_test, y_test))
+    
+    return score
+
+answer_eight()
+```
+
+### 11. plot
+
+同样可以看一下在模型的作用下，训练集 和 测试集中恶性样本和良性样本分别的准确度，训练集上都是 100％，而在测试集上，良性样本的准确度略高.
+
+```
+def accuracy_plot():
+    import matplotlib.pyplot as plt
+
+    %matplotlib notebook
+
+    X_train, X_test, y_train, y_test = answer_four()
+
+    # Find the training and testing accuracies by target value (i.e. malignant, benign)
+    mal_train_X = X_train[y_train==0]
+    mal_train_y = y_train[y_train==0]
+    ben_train_X = X_train[y_train==1]
+    ben_train_y = y_train[y_train==1]
+
+    mal_test_X = X_test[y_test==0]
+    mal_test_y = y_test[y_test==0]
+    ben_test_X = X_test[y_test==1]
+    ben_test_y = y_test[y_test==1]
+
+    knn = answer_five()
+
+    scores = [knn.score(mal_train_X, mal_train_y), knn.score(ben_train_X, ben_train_y), 
+              knn.score(mal_test_X, mal_test_y), knn.score(ben_test_X, ben_test_y)]
+
+
+    plt.figure()
+
+    # Plot the scores as a bar chart
+    bars = plt.bar(np.arange(4), scores, color=['#4c72b0','#4c72b0','#55a868','#55a868'])
+
+    # directly label the score onto the bars
+    for bar in bars:
+        height = bar.get_height()
+        plt.gca().text(bar.get_x() + bar.get_width()/2, height*.90, '{0:.{1}f}'.format(height, 2), 
+                     ha='center', color='w', fontsize=11)
+
+    # remove all the ticks (both axes), and tick labels on the Y axis
+    plt.tick_params(top='off', bottom='off', left='off', right='off', labelleft='off', labelbottom='on')
+
+    # remove the frame of the chart
+    for spine in plt.gca().spines.values():
+        spine.set_visible(False)
+
+    plt.xticks([0,1,2,3], ['Malignant\nTraining', 'Benign\nTraining', 'Malignant\nTest', 'Benign\nTest'], alpha=0.8);
+    plt.title('Training and Test Accuracies for Malignant and Benign Cells', alpha=0.8)
+    
+# Uncomment the plotting function to see the visualization, 
+# Comment out the plotting function when submitting your notebook for grading
+
+accuracy_plot()
+```
 
 <div align=center><img height="320" src="https://github.com/youngxiao/Linear-Regression-demo/raw/master/result/2D_regression.png"/></div>
 
 
-## Section 2: 3D 线性回归
-首先，对二氧化碳与气候变化数据集 `global_co2.csv` `annul_temp.csv`进行预处理，分别保留两个数据 1960 年以后的数据，得到 
-[Year, CO2 emissions], [Year, Global temperature] 两个数据集，然后合并，变为 [Year, CO2 emissions, Global temperature]
-```
-# Import data
-co2_df = pd.read_csv('global_co2.csv')
-temp_df = pd.read_csv('annual_temp.csv')
-print(co2_df.head())
-print(temp_df.head())
-
-# Clean data
-co2_df = co2_df.ix[:,:2]                     # Keep only total CO2
-co2_df = co2_df.ix[co2_df['Year'] >= 1960]   # Keep only 1960 - 2010
-co2_df.columns=['Year','CO2']                # Rename columns
-co2_df = co2_df.reset_index(drop=True)                # Reset index
-
-temp_df = temp_df[temp_df.Source != 'GISTEMP']                              # Keep only one source
-temp_df.drop('Source', inplace=True, axis=1)                                # Drop name of source
-temp_df = temp_df.reindex(index=temp_df.index[::-1])                        # Reset index
-temp_df = temp_df.ix[temp_df['Year'] >= 1960].ix[temp_df['Year'] <= 2010]   # Keep only 1960 - 2010
-temp_df.columns=['Year','Temperature']                                      # Rename columns
-temp_df = temp_df.reset_index(drop=True)                                             # Reset index
-
-print(co2_df.head())
-print(temp_df.head())
-
-# Concatenate
-climate_change_df = pd.concat([co2_df, temp_df.Temperature], axis=1)
-
-print(climate_change_df.head())
-```
-
-显示三维可视化数据
-```
-from mpl_toolkits.mplot3d import Axes3D
-fig = plt.figure()
-fig.set_size_inches(12.5, 7.5)
-ax = fig.add_subplot(111, projection='3d')
-
-ax.scatter(xs=climate_change_df['Year'], ys=climate_change_df['Temperature'], zs=climate_change_df['CO2'])
-
-ax.set_ylabel('Relative tempature'); ax.set_xlabel('Year'); ax.set_zlabel('CO2 Emissions')
-ax.view_init(10, -45)
-```
-<div align=center><img height="320" src="https://github.com/youngxiao/Linear-Regression-demo/raw/master/result/3D_data.png"/></div>
-
-将二氧化碳排放和全球温度变化分别用二维显示
-```
-f, axarr = plt.subplots(2, sharex=True)
-f.set_size_inches(12.5, 7.5)
-axarr[0].plot(climate_change_df['Year'], climate_change_df['CO2'])
-axarr[0].set_ylabel('CO2 Emissions')
-axarr[1].plot(climate_change_df['Year'], climate_change_df['Temperature'])
-axarr[1].set_xlabel('Year')
-axarr[1].set_ylabel('Relative temperature')
-```
-<div align=center><img width="600" src="https://github.com/youngxiao/Linear-Regression-demo/raw/master/result/co2.png"/></div>
-<div align=center><img width="600" src="https://github.com/youngxiao/Linear-Regression-demo/raw/master/result/temp.png"/></div>
-
-3D线性回归并可视化结果
-```
-X = climate_change_df.as_matrix(['Year'])
-Y = climate_change_df.as_matrix(['CO2', 'Temperature']).astype('float32')
-X_train, X_test, y_train, y_test = np.asarray(train_test_split(X, Y, test_size=0.1))
-reg = LinearRegression()
-reg.fit(X_train, y_train)
-print('Score: ', reg.score(X_test.reshape(-1, 1), y_test))
-x_line = np.arange(1960,2011).reshape(-1,1)
-p = reg.predict(x_line).T
-fig2 = plt.figure()
-fig2.set_size_inches(12.5, 7.5)
-ax = fig2.add_subplot(111, projection='3d')
-ax.scatter(xs=climate_change_df['Year'], ys=climate_change_df['Temperature'], zs=climate_change_df['CO2'])
-ax.set_ylabel('Relative tempature'); ax.set_xlabel('Year'); ax.set_zlabel('CO2 Emissions')
-ax.plot(xs=x_line, ys=p[1], zs=p[0], color='green')
-ax.view_init(10, -45)
-```
-<div align=center><img height="320" src="https://github.com/youngxiao/Linear-Regression-demo/raw/master/result/3D_regression.png"/></div>
-
-将对二氧化碳和全球气温变化的预测分别在二维里面显示
-```
-f, axarr = plt.subplots(2, sharex=True)
-f.set_size_inches(12.5, 7.5)
-axarr[0].plot(climate_change_df['Year'], climate_change_df['CO2'])
-axarr[0].plot(x_line, p[0])
-axarr[0].set_ylabel('CO2 Emissions')
-axarr[1].plot(climate_change_df['Year'], climate_change_df['Temperature'])
-axarr[1].plot(x_line, p[1])
-axarr[1].set_xlabel('Year')
-axarr[1].set_ylabel('Relative temperature')
-```
-<div align=center><img width="600" src="https://github.com/youngxiao/Linear-Regression-demo/raw/master/result/co2.png"/></div>
-<div align=center><img width="600" src="https://github.com/youngxiao/Linear-Regression-demo/raw/master/result/temp.png"/></div>
 
 ## 依赖的 packages
 * matplotlib
