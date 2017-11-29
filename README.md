@@ -1,4 +1,8 @@
 # KNN simple demo
+
+k-近邻（KNN）算法可用于分类或回归。这是一种简单的机器学习算法，但它通常非常有效。它是非参数的，也就是说它没有固定数量的参数。当你训练KNN时，它找到k个“最近点”到一个给定的点，并返回最高比例的类。如果k＝1，则只查找一个最接近的点并返回它的类。这不太理想。KNN的最优K值通常在3-10。测试输入x与训练样本之间的距离欧氏距离是典型的距离度量。其他的距离度量也被使用，但这是最常见的。当我们拥有大量的特性时，维数灾难使得KNN失效了。特别是嘈杂的或不相关的特征。从某种意义上说，噪音使两个点彼此距离越近。可以使用诸如PCA之类的工具来减少维度，如果有超过10个特征，这是一个很好的实践。下面是利用[Breast Cancer Wisconsin (Diagnostic) Database](http://archive.ics.uci.edu/ml/datasets/Breast+Cancer+Wisconsin+(Diagnostic)) 数据集来训练一个分类器，用于病人的诊断。同样还是用到机器学习库 [sklearn](http://scikit-learn.org/stable/install.html#install-bleeding-edge%E3%80%82).
+
+
 ### 1. 导入数据
 在本示例中将用到 [Breast Cancer Wisconsin (Diagnostic) Database](http://archive.ics.uci.edu/ml/datasets/Breast+Cancer+Wisconsin+(Diagnostic)) 数据集来训练一个分类器，用于病人的诊断. 因此先导入数据集，并看一下数据集的描述.
 ```
@@ -275,15 +279,14 @@ def accuracy_plot():
 accuracy_plot()
 ```
 
-<div align=center><img height="320" src="https://github.com/youngxiao/Linear-Regression-demo/raw/master/result/2D_regression.png"/></div>
+<div align=center><img height="320" src="https://github.com/youngxiao/Linear-Regression-demo/raw/master/images/Acurracy.png"/></div>
 
 
 
 ## 依赖的 packages
-* matplotlib
+* sklearn
 * pandas
 * numpy
-* seaborn
 
 ## 欢迎关注
 * Github：https://github.com/youngxiao
