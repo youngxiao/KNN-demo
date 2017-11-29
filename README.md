@@ -279,7 +279,7 @@ def accuracy_plot():
 accuracy_plot()
 ```
 
-<div align=center><img height="320" src="https://github.com/youngxiao/Linear-Regression-demo/raw/master/images/Acurracy.png"/></div>
+<div align=center><img height="320" src="https://github.com/youngxiao/KNN-demo/raw/master/images/Acurracy.png"/></div>
 
 
 
